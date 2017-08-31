@@ -1,5 +1,5 @@
 MAJOR=0
-MINOR=1
+MINOR=2
 BUILD=$(shell cat version.build)
 CFLAGS+=-DMAJOR=$(MAJOR) -DMINOR=$(MINOR) -DBUILD=$(BUILD) -DDEBUG
 SOURCES=$(filter-out main.c, $(wildcard *.c))
