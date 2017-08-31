@@ -15,8 +15,8 @@ int StubInit(int argc, char *argv[]) {
     return 1;
 }
 
-void StubOpen() {
-
+uint8_t StubOpen() {
+    return 0;
 }
 
 void StubWrite(uint8_t data) {

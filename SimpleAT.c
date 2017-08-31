@@ -1,6 +1,6 @@
-#include "RPSimpleAT.h"
+#include "SimpleAT.h"
 
-static RPATCommandDescriptor *__engine;
+static ATCommandDescriptor *__engine;
 static uint8_t __sizeOfEngine;
 
 #if 0
@@ -10,7 +10,7 @@ static uint8_t __sizeOfEngine;
 #endif
 
 /*Driver functions ---------------------*/
-static void (*__open)(void);
+static uint8_t (*__open)(void);
 static uint8_t (*__read)(void);
 static void (*__write)(uint8_t);
 static uint8_t (*__available)(void);
@@ -233,7 +233,7 @@ void __stateMachineDigest(uint8_t current) {
 
 }
 
-void RPATEngineInitDriver(void (*open)(void),
+void ATEngineDriverInit(uint8_t (*open)(void),
                           uint8_t (*read)(void),
                           void (*write)(uint8_t),
                           uint8_t (*available)(void)) {
@@ -243,15 +243,25 @@ void RPATEngineInitDriver(void (*open)(void),
     __available = available;
 }
 
-void RPATEngineInit(RPATCommandDescriptor *engine,  uint8_t sizeOfEngine) {
+void ATEngineInit(ATCommandDescriptor *engine,  uint8_t sizeOfEngine) {
     __engine = engine;
     __sizeOfEngine = sizeOfEngine;
     __open();
 }
 
-uint8_t RPATEngineRun() {
+uint8_t ATEngineRun() {
     while(__available()) {
         __stateMachineDigest(__read());
     }
     return 1;
+}
+
+void ATReply(uint8_t *msg, int size)
+{
+    for(int i = 0; i < size; ++i) __write(msg[i]);
+}
+
+void ATReplyWithString(char *str)
+{
+    for(int i = 0; i != '\0'; ++i) __write((uint8_t)str[i]);
 }

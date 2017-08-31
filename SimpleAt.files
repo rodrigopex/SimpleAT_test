@@ -1,6 +1,6 @@
 Makefile
-RPSimpleAT.c
-RPSimpleAT.h
+SimpleAT.c
+SimpleAT.h
 Stub.c
 Stub.h
 main.c

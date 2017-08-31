@@ -5,7 +5,7 @@
 
 int StubInit(int argc, char *argv[]);
 
-void StubOpen();
+uint8_t StubOpen();
 
 void StubWrite(uint8_t data);
 
