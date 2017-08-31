@@ -1,9 +1,13 @@
 #include "RPSimpleAT.h"
 
-#include <stdio.h>
-
 static RPATCommandDescriptor *__engine;
 static uint8_t __sizeOfEngine;
+
+#if 0
+#define LOG(x) printf(x)
+#else
+#define LOG(x)
+#endif
 
 /*Driver functions ---------------------*/
 static void (*__open)(void);
@@ -12,11 +16,7 @@ static void (*__write)(uint8_t);
 static uint8_t (*__available)(void);
 /*--------------------------------------*/
 
-/*AT+WRITE=HHHH,HHHHHH<CR>*/
-/*AT+READ1=HHHH<CR>*/
-/*AT+READ2=HHHH<CR>*/
-/*AT+READ3=HHHH<CR>*/
-/*AT+READ4=HHHH<CR>*/
+#define SHOW_COMMAND() for(int i = 0; i < cmdIndex; i++) {printf("%c",cmd[i])}
 
 uint8_t asciiToUint8(uint8_t character) {
     switch (character) {
@@ -74,50 +74,81 @@ uint8_t isDigit(uint8_t character) {
     }
 }
 
+#define ERROR() \
+    for(int i = 0; i < cmdIndex; i++) {\
+        __write(cmd[i]);\
+    }\
+    __write('\n');\
+    __write('\n');\
+    __write('E');\
+    __write('R');\
+    __write('R');\
+    __write('O');\
+    __write('R');\
+    __write('\n');
+
+
+#define OK() \
+    for(int i = 0; i < cmdIndex; i++) {\
+        __write(cmd[i]);\
+    }\
+    if(currentCommand >= 0)(*__engine[currentCommand].client)(params);\
+    __write('\n');\
+    __write('\n');\
+    __write('O');\
+    __write('K');\
+    __write('\n');
 
 void __stateMachineDigest(uint8_t current) {
     static uint8_t state;
-    //static uint8_t cmd[50];
+
     static int8_t currentCommand = -1;
     static uint8_t currentCommandIndex = 0;
 
-    static uint32_t params[10] = {0};
+    static uint16_t params[AT_MAX_NUMBER_OF_ARGS] = {0};
     static uint8_t currentParam;
     static uint8_t currentParamIndex;
 
+    static uint8_t cmd[50] = {0};
+    static uint8_t cmdIndex;
+    if(state == 0)
+        cmdIndex = 0;
+    cmd[cmdIndex] = current;
+    cmdIndex++;
+
     switch(state) {
     case 0:
-        printf("State 0\n");
+        LOG("State 0\n");
+        currentCommand = -1;
+        currentCommandIndex = 0;
         if(current == 'A')
             state = 1;
         break;
     case 1:
-        printf("State 1\n");
+        LOG("State 1\n");
         if(current == 'T')
             state = 2;
         else if(current == '\n') {
             state = 0;
-            printf("\n\nERROR\n");
+            ERROR();
         } else
             state = 255; //error
         break;
     case 2:
-        printf("State 2\n");
+        LOG("State 2\n");
         if(current == '+'){
             state = 3;
-            currentCommandIndex = 0;
-            currentCommand = -1;
         } else if(current == '\n') {
-            printf("\n\nOK\n");
+            OK();
             state = 0;
         } else
             state = 255; //error
         break;
     case 3:
-        printf("State 3\n");
+        LOG("State 3\n");
         if(current == '\n') {
             state = 0;
-            printf("\n\nERROR\n");
+            ERROR();
         } else {
             for(uint8_t i = 0; i < __sizeOfEngine; ++i) {
                 if(__engine[i].command[currentCommandIndex] == current) {
@@ -131,20 +162,19 @@ void __stateMachineDigest(uint8_t current) {
         }
         break;
     case 4: {
-        printf("State 4\n");
+        LOG("State 4\n");
         if(current == '\n') {
             if(currentCommandIndex == __engine[currentCommand].sizeOfCommand) {
                 if(__engine[currentCommand].numberOfArgs == 0) {
-                    printf("Client return must be here\n");
-                    printf("\n\nOK\n");
+                    OK();
                     state = 0;
                 } else {
                     state = 0;
-                    printf("\n\nERROR\n");
+                    ERROR();
                 }
             } else {
                 state = 0;
-                printf("\n\nERROR\n");
+                ERROR();
             }
         } else if((currentCommandIndex < __engine[currentCommand].sizeOfCommand) &&
                   (__engine[currentCommand].command[currentCommandIndex] == current)) {
@@ -164,21 +194,15 @@ void __stateMachineDigest(uint8_t current) {
         break;
     }
     case 5:
-        printf("State 5\n"); // get paramenters
-        uint8_t sizeInBytes = __engine[currentCommand].argsSize[currentParam]<<1;
-        printf("param index %d, %d, %02X\n",currentParamIndex, sizeInBytes, current);
+        LOG("State 5\n"); // get paramenters
+        uint8_t sizeInBytes = (uint8_t) __engine[currentCommand].argsSize[currentParam]<<1;
         if(current == '\n') {
             if(currentParamIndex == sizeInBytes && (__engine[currentCommand].numberOfArgs == currentParam + 1)) {
-                printf("Call client with params:");
-                for(int i = 0; i < __engine[currentCommand].numberOfArgs; ++i) {
-                    printf(" %04X", params[i]);
-                }
-                printf("\n");
-                printf("\n\nOK\n");
+                OK();
                 state = 0;
             } else {
                 state = 0;
-                printf("\n\nERROR\n");
+                ERROR();
             }
         } else if(isDigit(current) && currentParamIndex < sizeInBytes) {
             params[currentParam] |= (uint32_t) asciiToUint8(current) << (4 * (sizeInBytes - currentParamIndex - 1));
@@ -188,7 +212,6 @@ void __stateMachineDigest(uint8_t current) {
                 if(current == ','){
                     currentParamIndex = 0;
                     currentParam++;
-                    printf("aqui\n");
                 } else {
                     state = 255;
                 }
@@ -199,26 +222,25 @@ void __stateMachineDigest(uint8_t current) {
             state = 255; //error
         break;
     case 255:
-        //        printf("current 0x%02X", current);
         if(current == '\n') { //cleaning input...
             state = 0;
-            printf("\n\nERROR\n");
-        } else {
-            printf(".");
+            ERROR();
         }
-
         break;
     default:
-        printf("\n\nERROR\n");
+        ERROR();
     }
 
 }
 
-void RPATEngineInitDriver(void *open, void *read, void *write, void *available) {
-    __open = (void (*)(void)) open;
-    __read = (uint8_t (*)(void)) read;
-    __write = (void (*)(uint8_t)) write;
-    __available = (uint8_t (*)(void)) available;
+void RPATEngineInitDriver(void (*open)(void),
+                          uint8_t (*read)(void),
+                          void (*write)(uint8_t),
+                          uint8_t (*available)(void)) {
+    __open = open;
+    __read = read;
+    __write = write;
+    __available = available;
 }
 
 void RPATEngineInit(RPATCommandDescriptor *engine,  uint8_t sizeOfEngine) {

@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-void StubInit(char *data);
+int StubInit(int argc, char *argv[]);
 
 void StubOpen();
 

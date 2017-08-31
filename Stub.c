@@ -3,9 +3,16 @@
 static int __currentData = 0;
 static char *__data;
 
-void StubInit(char *data) {
-    __data = data;
+int StubInit(int argc, char *argv[]) {
+    if(argc == 1) {
+        printf("No commands...\n");
+        return 0;
+    } else {
+        printf("data -> [%s]\n",argv[1]);
+    }
+    __data = argv[1];
     __currentData = 0;
+    return 1;
 }
 
 void StubOpen() {
