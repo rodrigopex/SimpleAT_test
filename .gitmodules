@@ -1,0 +1,3 @@
+[submodule "SimpleAT"]
+	path = SimpleAT
+	url = https://github.com/rodrigopex/SimpleAT.git
