@@ -6,13 +6,13 @@ static char *__data;
 int StubInit(int argc, char *argv[]) {
     if(argc == 1) {
         printf("No commands...\n");
-        return 0;
+        return 1;
     } else {
         printf("data -> [%s]\n",argv[1]);
     }
     __data = argv[1];
     __currentData = 0;
-    return 1;
+    return 0;
 }
 
 uint8_t StubOpen() {

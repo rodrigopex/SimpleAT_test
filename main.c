@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
     * ./build/SimpleATTest "$(cat test.cmd)" > test.log && diff test.log test.log_ok
     * If there is difference there error.
     */
-    StubInit(argc, argv);
+    if(StubInit(argc, argv)) return 1;
 
     ATEngineDriverInit(StubOpen,
                        StubRead,
@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
         AT_COMMAND(WRITE, AT_ARGS(AT_TYPE(uint16_t), AT_TYPE(uint8_t)), writeClient)
     };
     ATEngineInit(atEngine, 4);
-    while(ATEngineRun()) {
+    while(ATEnginePollingHandle()) {
         //spare code
         return 0;
     }
