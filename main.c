@@ -1,5 +1,18 @@
 #include "SimpleAT.h"
 #include "Stub.h"
+#include <stdio.h>
+
+//typedef enum {
+//    kAYCommandMaxSize = 20
+//} AYLimitation;
+
+//void openProfileClient(AYCommandDescriptor *cmd) {
+//    char cmdStr[kAYCommandMaxSize];
+//    AYCommandDescriptorCopyStringCommandTo(cmd, cmdStr);
+//    if(AYCommandDescriptorGetNumberOfArgs(cmd) == 3) {
+//        AYCommandDescriptorGetArgAtIndex(cmd, 0);
+//    }
+//}
 
 void startClient(const uint8_t *args){
     (void) args;
@@ -48,12 +61,13 @@ int main(int argc, char **argv) {
                        StubAvailable);
 
     ATCommandDescriptor atEngine[] = {
-        AT_COMMAND(START, AT_NO_ARGS, startClient),
-        AT_COMMAND(READ, AT_ARGS(AT_TYPE(uint16_t)), readClient),
-        AT_COMMAND(CHANGE, AT_ARGS(AT_TYPE_STRING), setClient),
-        AT_COMMAND(WRITE, AT_ARGS(AT_TYPE(uint16_t), AT_TYPE(uint8_t)), writeClient)
+        AT_COMMAND(START, 0, startClient),
+        AT_COMMAND(READ, 1, readClient),
+        AT_COMMAND(CHANGE, 1, setClient),
+        AT_COMMAND(WRITE, 2, writeClient),
+        0
     };
-    ATEngineInit(atEngine, 4);
+    ATEngineInit(atEngine);
     while(ATEnginePollingHandle()) {
         //spare code
         return 0;
