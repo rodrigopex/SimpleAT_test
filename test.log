@@ -25,6 +25,10 @@ AT+CHANGE="1234567891011121314151617181920"
 AT+CHANGE="1234567891011
 AT+CHANGE="Hello World"
 .]
+B
+
+
+ERROR
 A
 
 
@@ -50,17 +54,17 @@ Results of startClient
 
 OK
 AT+READ=
+Results of readClient ADDR: 0000
 
-
-ERROR
+OK
 AT+READ=XC
+Results of readClient ADDR: 000C
 
-
-ERROR
+OK
 AT+READ=2C
+Results of readClient ADDR: 002C
 
-
-ERROR
+OK
 AT+READ=1234
 Results of readClient ADDR: 1234
 
@@ -70,58 +74,58 @@ AT+WRITE=1X34
 
 ERROR
 AT+WRITE=1234,
+Results of writeClient ADDR: 1234 VALUE: 00
 
-
-ERROR
+OK
 AT+WRITE=1234X
 
 
 ERROR
 AT+WRITE=1234,56
-Results of writeClient ADDR: 1234 VALUE: 34
+Results of writeClient ADDR: 1234 VALUE: 56
 
 OK
 AT+WRITE=1234,X6
+Results of writeClient ADDR: 1234 VALUE: 06
 
-
-ERROR
+OK
 AT+READ=1239,6
 
 
 ERROR
 AT+CHANGE=""
-Results of setClient STR: 
+Results of setClient STR: AT+CHANGE
 
 OK
 AT+CHANGE="H"I
+Results of setClient STR: AT+CHANGE
 
-
-ERROR
+OK
 AT+CHANGE=1"I"
+Results of setClient STR: AT+CHANGE
 
-
-ERROR
+OK
 AT+CHANGE=1234567890"I"
+Results of setClient STR: AT+CHANGE
 
-
-ERROR
+OK
 AT+CHANGE=1I"
+Results of setClient STR: AT+CHANGE
 
-
-ERROR
+OK
 AT+CHANGE=H"I"
+Results of setClient STR: AT+CHANGE
 
-
-ERROR
+OK
 AT+CHANGE="1234567891011121314151617181920"
+Results of setClient STR: AT+CHANGE
 
-
-ERROR
+OK
 AT+CHANGE="1234567891011
+Results of setClient STR: AT+CHANGE
 
-
-ERROR
+OK
 AT+CHANGE="Hello World"
-Results of setClient STR: Hello World
+Results of setClient STR: AT+CHANGE
 
 OK

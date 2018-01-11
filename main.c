@@ -2,57 +2,70 @@
 #include "Stub.h"
 #include <stdio.h>
 
-//typedef enum {
-//    kAYCommandMaxSize = 20
-//} AYLimitation;
+void testClient(AYCommand *cmd)
+{
 
-//void openProfileClient(AYCommandDescriptor *cmd) {
-//    char cmdStr[kAYCommandMaxSize];
-//    AYCommandDescriptorCopyStringCommandTo(cmd, cmdStr);
-//    if(AYCommandDescriptorGetNumberOfArgs(cmd) == 3) {
-//        AYCommandDescriptorGetArgAtIndex(cmd, 0);
-//    }
-//}
+}
 
-void startClient(const uint8_t *args){
+void startClient(AYCommand *args)
+{
     (void) args;
     ATReplyWithString((char*)"Results of ");
     ATReplyWithString((char*)__FUNCTION__);
 }
 
-void readClient(const uint8_t *args){
-    uint16_t addr = (uint16_t)((args[0] << 8) + args[1]);
+void readClient(AYCommand *cmd)
+{
+    uint16_t addr = (uint16_t) AYStringToNumber(AYCommandGetArgAtIndex(cmd, 0));
     ATReplyWithString((char*) "Results of ");
     ATReplyWithString((char*)__FUNCTION__);
     ATReplyWithString((char*) " ADDR: ");
-    ATReplyWithByteArray(ATReplyByteArray(addr));
+    ATReplyWithNumber(addr);
 }
 
-void setClient(const uint8_t *args){
+void setClient(AYCommand *cmd)
+{
     ATReplyWithString((char*) "Results of ");
     ATReplyWithString((char*)__FUNCTION__);
     ATReplyWithString((char*) " STR: ");
-    ATReplyWithString((char *) args);
+    ATReplyWithString((char *) AYCommandGetArgAtIndex(cmd, 0));
 }
 
-void writeClient(const uint8_t *args){
-    uint16_t addr = (uint16_t)((args[0] << 8) + args[1]);
-    uint8_t value = args[1];
+void writeClient(AYCommand *cmd)
+{
+    uint16_t addr = AYStringToNumber(AYCommandGetArgAtIndex(cmd, 0));
+    uint8_t value = AYStringToNumber(AYCommandGetArgAtIndex(cmd, 1));
     ATReplyWithString((char*) "Results of ");
     ATReplyWithString((char*)__FUNCTION__);
     ATReplyWithString((char*) " ADDR: ");
-    ATReplyWithByteArray(ATReplyByteArray(addr));
+    ATReplyWithNumber(addr);
     ATReplyWithString((char*) " VALUE: ");
-    ATReplyWithByte(value);
+    ATReplyWithNumber(value);
 }
 
 
+
+void testStringCmp()
+{
+    printf("Compare test with test: %d\n", AYStringCompare("", "") == 1);
+    printf("Compare test with test: %d\n", AYStringCompare("", "test") == 0);
+    printf("Compare test with test: %d\n", AYStringCompare("test", "") == 0);
+    printf("Compare test with test: %d\n", AYStringCompare("test", "test") == 1);
+    printf("Compare test with test: %d\n", AYStringCompare("testando", "test") == 0);
+    printf("Compare test with test: %d\n", AYStringCompare("test", "testando") == 0);
+    printf("Compare test with test: %d\n", AYStringCompare("a", "b") == 0);
+    printf("Compare test with test: %d\n", AYStringCompare("ba", "ab") == 0);
+}
 
 int main(int argc, char **argv) {
     /* Commando to test the lib
     * ./build/SimpleATTest "$(cat test.cmd)" > test.log && diff test.log test.log_ok
+    *
+    * ./build/SimpleATTest "$(cat test.cmd)" > test.log && diff test.log test.log_ok
     * If there is difference there error.
     */
+    //testStringCmp();
+
     if(StubInit(argc, argv)) return 1;
 
     ATEngineDriverInit(StubOpen,
@@ -65,11 +78,11 @@ int main(int argc, char **argv) {
         AT_COMMAND(READ, 1, readClient),
         AT_COMMAND(CHANGE, 1, setClient),
         AT_COMMAND(WRITE, 2, writeClient),
-        0
+        AT_COMMAND(TEST, 4, testClient),
+        AT_END_OF_COMMANDS
     };
     ATEngineInit(atEngine);
     while(ATEnginePollingHandle()) {
-        //spare code
         return 0;
     }
     return 0;
