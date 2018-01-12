@@ -61,7 +61,6 @@ int main(int argc, char **argv) {
     /* Commando to test the lib
     * ./build/SimpleATTest "$(cat test.cmd)" > test.log && diff test.log test.log_ok
     *
-    * ./build/SimpleATTest "$(cat test.cmd)" > test.log && diff test.log test.log_ok
     * If there is difference there error.
     */
     //testStringCmp();
@@ -86,6 +85,4 @@ int main(int argc, char **argv) {
         return 0;
     }
     return 0;
-
-
 }
