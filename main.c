@@ -1,6 +1,5 @@
 #include "SimpleAT.h"
 #include "Stub.h"
-#include <stdio.h>
 
 void testClient(AYCommand *cmd)
 {
@@ -43,8 +42,6 @@ void writeClient(AYCommand *cmd)
     ATReplyWithString((char*) " VALUE: ");
     ATReplyWithNumber(value);
 }
-
-
 
 void testStringCmp()
 {
