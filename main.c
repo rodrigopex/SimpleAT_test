@@ -4,7 +4,8 @@
 
 void testClient(AYCommand *cmd)
 {
-
+    ATReplyWithString("Number or arguments: ");
+    ATReplyWithNumber(AYCommandGetNumberOfArgs(cmd));
 }
 
 void startClient(AYCommand *args)
